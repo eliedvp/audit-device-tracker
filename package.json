@@ -26,6 +26,9 @@
   },
   "keywords": ["security", "audit", "device", "fingerprint", "login", "anomaly-detection", "impossible-travel"],
   "license": "MIT",
+    "repository": { "type": "git", "url": "git+https://github.com/eliedvp/audit-device-tracker.git" },
+  "bugs": { "url": "https://github.com/eliedvp/audit-device-tracker/issues" },
+  "homepage": "https://github.com/eliedvp/audit-device-tracker#readme",
   "engines": { "node": ">=22" },
   "dependencies": { "bowser": "^2.14.1" },
   "devDependencies": {
