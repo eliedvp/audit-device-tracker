@@ -1,4 +1,7 @@
 # audit-device-tracker
+[![CI](https://github.com/eliedvp/audit-device-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/eliedvp/audit-device-tracker/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/audit-device-tracker.svg)](https://www.npmjs.com/package/audit-device-tracker)
+[![license](https://img.shields.io/npm/l/audit-device-tracker.svg)](LICENSE)
 
 Identifiez et auditez les appareils utilisés par vos utilisateurs pour se connecter. Détectez les **identifiants partagés** (par exemple, un collègue utilisant le compte d'une autre personne depuis un autre ordinateur), les **nouveaux appareils**, les **déplacements impossibles** et les **connexions simultanées**, tout en intégrant la protection de la vie privée.
 
