@@ -1,0 +1,39 @@
+{
+  "name": "audit-device-tracker",
+  "version": "0.1.0",
+  "description": "Identify and audit the devices users log in with. Detect shared credentials, new devices, impossible travel and simultaneous logins.",
+  "author": "ADIKO ELIE",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/fingerprint.d.ts",
+      "import": "./dist/client/fingerprint.js"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
+    "demo": "tsc --ignoreConfig examples/demo.ts --outDir .demo --rootDir . --module nodenext --moduleResolution nodenext --target es2022 --types node --skipLibCheck && node --no-warnings .demo/examples/demo.js"
+  },
+  "keywords": ["security", "audit", "device", "fingerprint", "login", "anomaly-detection", "impossible-travel"],
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "dependencies": { "bowser": "^2.14.1" },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+
+    "@types/node": "^26.6.4",
+    "express": "^5.2.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
