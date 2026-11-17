@@ -20,6 +20,25 @@ describe('parser', () => {
     expect(anonymizeIp('2001:db8:85a3:8d3:1319:8a2e:370:7348')).toBe('2001:db8:85a3::');
   });
 
+  it('anonymizes a compressed IPv6 address', () => {
+    expect(anonymizeIp('2001:db8::1')).toBe('2001:db8:0::');
+    expect(anonymizeIp('::1')).toBe('0:0:0::');
+  });
+
+  it('anonymizes an IPv4-mapped IPv6 address', () => {
+    expect(anonymizeIp('::ffff:41.202.10.77')).toBe('::ffff:41.202.10.0');
+  });
+
+  it('ignores a cookie with a malformed encoding', () => {
+    expect(readCookie('adt_did=%E0%A4%A', 'adt_did')).toBeUndefined();
+  });
+
+  it('prefers the socket address over a forgeable x-forwarded-for', () => {
+    const req = { headers: { 'x-forwarded-for': '9.9.9.9' }, socket: { remoteAddress: '1.2.3.4' } };
+
+    expect(extractIp(req)).toBe('1.2.3.4');
+  });
+
   it('reads a cookie among several', () => {
     expect(readCookie('a=1; adt_did=abc', 'adt_did')).toBe('abc');
   });

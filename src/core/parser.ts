@@ -9,21 +9,47 @@ const first = (v: string | string[] | undefined): string =>
 
 const CLIENT_FINGERPRINT_PATTERN = /^[a-f0-9]{16,64}$/i;
 
+/**
+ * X-Forwarded-For can be forged by any client: it is only a last resort when neither
+ * the framework (req.ip, e.g. Express with 'trust proxy') nor the socket give an address.
+ */
 export function extractIp(req: RequestLike): string {
   const forwarded = first(req.headers['x-forwarded-for']).split(',')[0]?.trim();
-  return req.ip || forwarded || req.socket?.remoteAddress || 'unknown';
+  return req.ip || req.socket?.remoteAddress || forwarded || 'unknown';
+}
+
+function anonymizeIpv4(ip: string): string {
+  const parts = ip.split('.');
+  return parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.0` : ip;
+}
+
+/** Keeps the first 3 groups (/48) of an IPv6 address, compressed or not. */
+function anonymizeIpv6(ip: string): string {
+  const [head = '', tail] = ip.split('::');
+  const headGroups = head ? head.split(':') : [];
+  const tailGroups = tail ? tail.split(':') : [];
+  const missing = tail === undefined ? 0 : Math.max(0, 8 - headGroups.length - tailGroups.length);
+  const groups = [...headGroups, ...Array<string>(missing).fill('0'), ...tailGroups];
+  return groups.slice(0, 3).map((g) => g || '0').join(':') + '::';
 }
 
 export function anonymizeIp(ip: string): string {
-  if (ip.includes(':')) return ip.split(':').slice(0, 3).join(':') + '::';
-  const parts = ip.split('.');
-  return parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.0` : ip;
+  // IPv4-mapped IPv6 (e.g. "::ffff:203.0.113.5", common on dual-stack servers).
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip);
+  if (mapped?.[1]) return `::ffff:${anonymizeIpv4(mapped[1])}`;
+  if (ip.includes(':')) return anonymizeIpv6(ip.split('%')[0] ?? ip);
+  return anonymizeIpv4(ip);
 }
 
 export function readCookie(header: string, name: string): string | undefined {
   for (const part of header.split(';')) {
     const [key, ...value] = part.trim().split('=');
-    if (key === name) return decodeURIComponent(value.join('='));
+    if (key !== name) continue;
+    try {
+      return decodeURIComponent(value.join('='));
+    } catch {
+      return undefined; // malformed encoding: treat as no cookie rather than failing the login
+    }
   }
   return undefined;
 }
