@@ -1,4 +1,5 @@
 # audit-device-tracker
+
 [![CI](https://github.com/eliedvp/audit-device-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/eliedvp/audit-device-tracker/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/audit-device-tracker.svg)](https://www.npmjs.com/package/audit-device-tracker)
 [![license](https://img.shields.io/npm/l/audit-device-tracker.svg)](LICENSE)
@@ -10,17 +11,18 @@ Identifiez et auditez les appareils utilisés par vos utilisateurs pour se conne
 Un mot de passe partagé paraît parfaitement valide pour un système d'authentification classique. Ce package ajoute une question importante : **quel appareil utilise cet utilisateur et l'a-t-il déjà utilisé auparavant ?**
 
 ```text
-alice  faible   0   premier_appareil
+alice  low      0  first_device
 
-bob    élevé   60   premier_appareil, appareil_partage_avec_autres_utilisateurs
-                     - Appareil également utilisé par : alice
+bob    high    60  first_device, device_shared_with_other_users
+         - Device also used by: alice
 
-alice  élevé  100   nouvel_appareil, déplacement_impossible, connexion_simultanée
-                     - Nouvel appareil : Safari sur iOS
-                     - Abidjan -> Paris : 4874 km en 0 min
+alice  high   100  new_device, impossible_travel, simultaneous_login
+         - New device: Safari on iOS
+         - Abidjan -> Paris: 4874 km in 0 min
+         - Another device logged in 0 s ago from a different IP
 ```
 
-Vous pouvez tester le fonctionnement avec :
+Ce scénario (sortie réelle de la démo) se reproduit avec :
 
 ```bash
 npm run demo
@@ -127,6 +129,7 @@ Vous pouvez ajouter vos propres règles ou remplacer celles fournies par défaut
 
 ```ts
 import {
+  DeviceTracker,
   defaultRules,
   type Rule
 } from 'audit-device-tracker';
@@ -162,7 +165,7 @@ Sans fournisseur de géolocalisation, les règles liées à la localisation rest
 
 ```ts
 import maxmind, { type CityResponse } from 'maxmind';
-import { MaxMindGeo } from 'audit-device-tracker';
+import { DeviceTracker, MaxMindGeo } from 'audit-device-tracker';
 
 const reader = await maxmind.open<CityResponse>(
   './GeoLite2-City.mmdb'
@@ -201,7 +204,8 @@ Le fingerprint utilise uniquement quelques informations à faible pouvoir d'iden
 * fuseau horaire ;
 * nombre de cœurs ;
 * plateforme ;
-* langues.
+* langues ;
+* nombre de points de contact tactiles.
 
 Le package n'utilise volontairement **ni Canvas, ni WebGL, ni analyse des polices**.
 
@@ -270,6 +274,8 @@ Ne faites pas confiance à `X-Forwarded-For` sans configuration appropriée du p
 ## Développement
 
 ```bash
+npm ci
+npm run typecheck
 npm test
 npm run build
 npm run demo
